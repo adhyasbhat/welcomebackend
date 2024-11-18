@@ -1,32 +1,42 @@
 const User = require("../modules/usermodules");
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
-const secretKey = process.env.JWT_TOKEN
-
+const secretKey = "test"
+console.log(secretKey)
 const usercontroller = {}
 
-usercontroller.loginUser = async (res,req)=>{
+usercontroller.loginUser = async (req,res)=>{
+    console.log("login")
     try{
         const user = await User.findOne({name:req.body.name})
+        console.log(user)
         if(!user){
             return res.status(404).json({error:"user does not exist"})
         }
         const decryptPassword = await bcrypt.compare(req.body.password,user.password)
+        console.log(decryptPassword)
         if(!decryptPassword){
             return res.status(400).json({error:"password doesnt match"})
         }
         const idData = user.id;
+        console.log(idData)
+        console.log(secretKey,"secc")
         const token = await jwt.sign({id:idData},secretKey)
+        console.log(secretKey,"sec")
+        console.log(token)
         const success = true
+        console.log(success)
         return res.status(200).json({success,token,user})
     }
     catch(error){
+        console.log(error,"error")
         return res.status(500).json({error:"internal server error:",error})
     }
 }
-usercontroller.registerUser = async (res,req) =>{
+usercontroller.registerUser = async (req,res) =>{
     try{
-        const {name,email,phone,dob,password,confirmpassword} = req.body
+        console.log("backend")
+        const {name,email,dob,phone,password,confirmpassword} = req.body
         if(!name || !email || !phone || !dob || !password || !confirmpassword){
             return res.status(400).send("name, email, dob, phone, password and confirm password are mandatory")
         }
@@ -45,7 +55,7 @@ usercontroller.registerUser = async (res,req) =>{
         return res.status(200).json({success:"Successfully registered"})
     }
     catch(error){
-        return res.status(500).json({error:"internal server error"})
+        return res.status(500).json({ error: "internal server error", details: error.message });
     }
 }
 module.exports = usercontroller
